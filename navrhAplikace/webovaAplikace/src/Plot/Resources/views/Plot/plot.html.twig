@@ -1,0 +1,1240 @@
+<html style="height: 100%;">
+{% block head %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+{% endblock %}
+{% block stylesheets_layout %}
+
+
+{% endblock %}
+{% block javascripts_page %}
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+
+    <script type="text/javascript" src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+
+{% endblock %}
+
+
+<body style="height: 100%;">
+<nav class="navbar navbar-light" style="background-color: #6C757D; height: 30px"></nav>
+<div class="row">
+
+    <div class="col-sm-2" >
+        <div class="container" style="background-color: #6C757D">
+    <div id="form" style="display: none">
+        <table>
+            {{ form_start(choosenForm) }}
+            <tr>
+                <td>{{ form_label(choosenForm.choosenData) }}</td>
+                <td>{{ form_widget(choosenForm.choosenData) }}</td>
+            </tr>
+            <tr>
+                <td>{{ form_label(choosenForm.noiseDb) }}</td>
+                <td>{{ form_widget(choosenForm.noiseDb) }}</td>
+            </tr>
+            <tr>
+                <td>{{ form_label(choosenForm.movingWindow) }}</td>
+                <td>{{ form_widget(choosenForm.movingWindow) }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>{{ form_widget(choosenForm.submit) }}</td>
+            </tr>
+
+
+            {{ form_end(choosenForm) }}
+        </table>
+    </div>
+
+            <nav class="nav flex-column" style="width: 250px; color: #6C757D">
+                <div class="accordion" id="accordionExample">
+                    <div class="card">
+                        <div class="card-header" id="headingOne">
+
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" style="cursor: pointer; padding-right: 0">Výber kriviek do grafu <i class="fas fa-chart-line" style="color: #6C757D"></i></li>
+                                <li class="list-group-item" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" style="cursor: pointer">Výber funkcií grafu</li>
+
+                            </ul>
+
+
+
+                        </div>
+
+                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <div id="graphForm" class="rhr"></div>
+
+
+
+
+                            </div>
+                        </div>
+                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <div id="functionForm"></div>
+                                <div class="form-group" id="minus">
+
+
+
+                                </div>
+                                <div class="form-group" id="plus">
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <li id="show" onclick="showGraph()" class="btn btn-dark btn-lg btn-block">Obnoviť graf</li>
+
+                </div>
+            </nav>
+
+
+    <div id="graphForm" class="rhr">
+
+    </div>
+
+
+
+    <button id="showGraph" style="display: none">Show Graph</button>
+
+
+
+
+</div>
+    </div>
+    <div class="col-sm-9">
+        <div id="resetGraf" style="position: absolute; right: 0; top: 10px; bottom: 10px; float: right">
+            <button class="btn btn-dark" id="reset" onclick="resetGraph()" >Resetovat graf</button>
+        </div>
+        <div id="hlavnyGraf" style="width: 100%; height: 450px; position: relative; top: 50px;">
+
+
+        </div>
+        <p></p>
+        <div id="chartOverview" style="height: 300px; top: 10px;">
+
+        </div>
+
+        <div id="chartMain" style="width: 100%; height: 450px; display: block"></div>
+
+    </div>
+
+</div>
+
+    <!-- --------chartMain------------ -->
+
+    <script type="text/javascript">
+
+
+
+/* ----------------------- include CSS  -------------------*/
+
+
+/*
+        var cssId = 'myCss';
+        if (!document.getElementById(cssId))
+        {
+            var head  = document.getElementsByTagName('head')[0];
+            var link  = document.createElement('link');
+            link.id   = cssId;
+            link.rel  = 'stylesheet';
+            link.type = 'text/css';
+            link.href = './styles.css';
+            link.media = 'all';
+            head.appendChild(link);
+        }
+        */
+/* ------------------------------------------------------------------------*/
+
+        var s = 0;
+        var data = [];
+        var hodnoty;                                                                // = UserAction.response;
+        var funkcie;
+
+
+        function UserAction() {
+            var xhttpHodnoty = new XMLHttpRequest();
+            var xhttpFunkcie = new XMLHttpRequest();
+
+            xhttpHodnoty.open("GET", "http://127.0.0.1:8000/api/curves", false);
+            xhttpFunkcie.open("GET", "http://127.0.0.1:8000/api/functions", false);
+
+            xhttpFunkcie.setRequestHeader("Content-type", "application/json");
+            xhttpHodnoty.setRequestHeader("Content-type", "application/json");
+
+            xhttpHodnoty.send();
+            xhttpFunkcie.send();
+
+            var responseHodnoty = JSON.parse(xhttpHodnoty.responseText);
+            var responseFunkcie = JSON.parse(xhttpFunkcie.responseText);
+
+            hodnoty = responseHodnoty;
+            funkcie = responseFunkcie;
+            console.log(Cookies.get(), document.cookie.split("; "));
+        }
+        UserAction();
+
+        var graphNames = Object.getOwnPropertyNames(hodnoty);   /* "property" -- vytvori array s nazvami kriviek */
+        document.getElementById("resetGraf").style.display = "none";
+        showGraph();
+/* --------------------------------------SELECT CURVES----------------------------------------------------------*/
+
+        function selectCurves() {
+            var selectedValues = [];        // values pre cookies
+            var selectedNewValues = [];     // values pre graf
+            var checkedValued = null ;
+            var y = 0;
+            var inputElements = document.getElementsByClassName('graphSelectCheckbox');
+            for (var i = 0; inputElements[i]; ++i) {
+                if (inputElements[i].checked) {
+                    checkedValued = inputElements[i].value;
+                    selectedValues[y] = checkedValued;
+                    selectedNewValues[y] = checkedValued;
+                    y++;
+                }
+            }
+
+        //-----------pridanie Cookie-----
+            var l = 0;
+
+            var selectedLength = selectedValues.length;
+            for (var n = 0; n < selectedLength; n++){
+                    var cookie = Cookies.get();
+                    var isEmpty = jQuery.isEmptyObject(cookie);
+                    var ca = document.cookie.split("; ");
+                    ca.forEach(function (caString) {
+                        caString.replace(' ', '');
+                    });
+                    var caLength = ca.length;
+                    var objectKeys = Object.keys(Cookies.get());
+                    if (isEmpty === false) {
+                        for (var k = 0; k < caLength; k++) {
+                            var hodnotaCookies = objectKeys[k] + "=" + selectedValues[0];
+                            var objectArray = Object.values(Cookies.get());
+                            if (ca[k] === hodnotaCookies) {
+                                Cookies.set(objectKeys[k], selectedValues[0]);
+                                selectedValues.shift();
+                            }
+                            else if (k === (caLength - 1) && selectedValues.length > 0 && !objectArray.includes(selectedValues[0])) {
+                                Cookies.set("checkedgraph"+ caLength, selectedValues[0]);
+                                selectedValues.shift();
+                            }
+                        }
+                    }
+                    else {
+                        Cookies.set("checkedgraph0", selectedValues[n]);
+                        selectedValues.shift()
+                    }
+            }
+
+        //------------vykreslenie grafu-------------
+
+            selectedNewValues.forEach(function (graphName) {
+                if (data.length < 1){
+                    graphName = {
+                        x: hodnoty[graphName][0].x,
+                        y: hodnoty[graphName][0].y,
+                        text: graphName,
+                        'hoverinfo': "xaxis + text",
+                        mode: 'lines',
+                        line: {
+                            color: getColor(),
+                            width: 2
+                        },
+                        name: graphName
+                    };
+                    data.push(graphName);
+                }
+                else {
+                    var obsah = [];
+                    for (var t = 0; t < data.length; t++){
+                        obsah.push(data[t].name);
+                    }
+                    if (!obsah.includes(graphName)){
+                        graphName = {
+                            x: hodnoty[graphName][0].x,
+                            y: hodnoty[graphName][0].y,
+                            text: graphName,
+                            'hoverinfo': "xaxis + text",
+                            mode: 'lines',
+                            line: {
+                                color: getColor(),
+                                width: 2
+                            },
+                            name: graphName
+                        };
+                        data.push(graphName);
+                    }
+                }
+            });
+
+        }
+
+    //----------------------zobrazenie grafu-------------------
+        function showGraph() {
+            var hlavnyGraf = document.getElementById('hlavnyGraf');
+
+            Plotly.newPlot( 'hlavnyGraf', data, {
+                modeBarButtonsToRemove: ['toImage', 'sendDataToCloud'],
+                modeBarButtonsToAdd: [{
+                    name: 'PNG_1000x500',
+                    icon: Plotly.Icons.camera,
+                    click: function(gd) {
+                        Plotly.downloadImage(gd, {format: 'png', width: 1000, height: 500, filename: 'analysis'});
+                    }
+                }]
+            });
+            document.getElementById("resetGraf").style.display = "inline";
+            CHARTOVERVIEW = document.getElementById('chartOverview');
+            zoom();
+        }
+
+        function zoom() {
+            var xAxisStart;
+            var yAxisStart;
+            var xAxisStop;
+            var yAxisStop;
+            var xRange;
+            hlavnyGraf.on('plotly_relayout',
+                function(eventdata){
+                    xAxisStart = eventdata['xaxis.range[0]'];
+                    xAxisStop = eventdata['xaxis.range[1]'];
+                    yAxisStart = eventdata['yaxis.range[0]'];
+                    yAxisStop = eventdata['yaxis.range[1]'];
+                    xRange = [xAxisStart, xAxisStop];
+                    if (xRange !== undefined) {
+                        overviewGraph(xAxisStart, xAxisStop, yAxisStart, yAxisStop);
+                    }
+                });
+        }
+
+        function overviewGraph(xAxisStart, xAxisStop, yAxisStart, yAxisStop) {
+            var optionOverview = {
+                xaxis: {
+                    type: 'scatter',
+                    showgrid: true,
+                    zeroline: true,
+                    showline: true,
+                    mirror: 'ticks',
+                    gridcolor: '#1a4f08',
+                    gridwidth: 1,
+                    zerolinecolor: '#967b00',
+                    zerolinewidth: 3,
+                    linecolor: '#003a63',
+                    linewidth: 3
+                },
+                yaxis: {
+                    showgrid: true,
+                    zeroline: true,
+                    showline: true,
+                    mirror: 'ticks',
+                    gridcolor: '#1a4f08',
+                    gridwidth: 1,
+                    zerolinecolor: '#967b00',
+                    zerolinewidth: 3,
+                    linecolor: '#003a63',
+                    linewidth: 3
+                },
+                dragmode: 'plotly_selected',
+                shapes:[{
+                    type: 'rect',
+                    xref: 'x',
+                    yref: 'y',
+                    x0: xAxisStart,
+                    x1: xAxisStop,
+                    y0: yAxisStart,
+                    y1: yAxisStop,
+                    line: {
+                        color: '#6cc24a',
+                        width: 3
+                    },
+                    fillcolor: 'rgba(108, 194, 74, 0.6)'
+                }],
+                margin: {
+                    l: 70,
+                    r: 130,
+                    b: 50,
+                    t: 20
+                }
+            };
+            var CHARTOVERVIEW = document.getElementById('chartOverview');
+            Plotly.newPlot( 'chartOverview', data, optionOverview, {displayModeBar: false}, {staticPlot: true});
+
+        }
+
+/* --------------------------------------color generator ----------------------------------------------------------*/
+        function getColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+/* --------------------------------------GRAPH FORM ----------------------------------------------------------*/
+
+        function graphFormFunction() {
+            var hGraphChoise = document.createElement("h5");
+            var pGraphChoise = document.createElement("P");
+            hGraphChoise.setAttribute("style", "text-decoration: underline");
+            hGraphChoise.setAttribute("id", "h5");
+            hGraphChoise.appendChild(document.createTextNode("Výber kriviek do grafu"));
+            document.getElementById("graphForm").appendChild(hGraphChoise);
+            document.getElementById("graphForm").appendChild(pGraphChoise);
+            graphNames.forEach(function (name) {
+                var graphName = document.createElement("INPUT");
+                var label = document.createElement("LABEL");
+                graphName.setAttribute("type", "checkbox");
+                graphName.setAttribute("name", name);
+                graphName.setAttribute("id", name);
+                graphName.setAttribute("value", name);
+                graphName.setAttribute("class", "graphSelectCheckbox");
+                graphName.setAttribute( "style", "float: left;  margin:0; vertical-align: bottom; position: relative;");
+                label.setAttribute("for", name);
+                label.setAttribute("style", "display: block; width: 100px; vertical-align: text-top");
+                label.appendChild(document.createTextNode(name));
+                document.getElementById("graphForm").appendChild(graphName);
+                document.getElementById("graphForm").appendChild(label);
+            });
+            var selectGraphs = document.createElement("BUTTON");
+            var buttonLabel = document.createTextNode("Potvrdiť");
+            selectGraphs.setAttribute("id", "selectGraphsButton");
+            selectGraphs.setAttribute("class", "btn btn-dark");
+            selectGraphs.setAttribute("style", "float: right, position: absolute; bottom: 0; ");
+            selectGraphs.appendChild(buttonLabel);
+            document.getElementById("graphForm").appendChild(selectGraphs);
+            document.getElementById("selectGraphsButton").onclick = function () {
+                selectCurves();
+            };
+            getCookies();
+            getSession();
+        }
+       graphFormFunction();
+       functionChoiseForm();
+
+
+/* --------------------------------------FUNCTION FORM ----------------------------------------------------------*/
+
+        function functionChoiseForm() {
+
+            var hGraphChoise = document.createElement("h5");
+            var pGraphChoise = document.createElement("P");
+            hGraphChoise.setAttribute("style", "text-decoration: underline");
+            hGraphChoise.setAttribute("id", "h5f");
+            hGraphChoise.appendChild(document.createTextNode("Výber funkcií grafu"));
+            document.getElementById("functionForm").appendChild(hGraphChoise);
+            document.getElementById("functionForm").appendChild(pGraphChoise);
+            graphNames.forEach(function (name) {
+                var graphName = document.createElement("INPUT");
+                var label = document.createElement("LABEL");
+                graphName.setAttribute("type", "checkbox");
+                graphName.setAttribute("name", name);
+                graphName.setAttribute("id", name);
+                graphName.setAttribute("value", name);
+                graphName.setAttribute("class", "functionSelectCheckbox");
+                graphName.setAttribute( "style", "float: left;  margin:0; vertical-align: bottom; position: relative;");
+                label.setAttribute("for", name);
+                label.setAttribute("style", "display: block; width: 80px; vertical-align: text-top");
+                label.appendChild(document.createTextNode(name));
+                document.getElementById("functionForm").appendChild(graphName);
+                document.getElementById("functionForm").appendChild(label);
+
+            });
+
+            var selectList = document.createElement("SELECT");
+            var functionOption = document.createElement("OPTION");
+
+            selectList.setAttribute("id", "selectFunctions");
+            selectList.setAttribute("class", "form-control");
+            document.getElementById("functionForm").appendChild(selectList);
+            functionOption.setAttribute("value", "");
+            functionOption.appendChild(document.createTextNode("vyberte funkciu"));
+
+            selectList.appendChild(functionOption);
+            funkcie.forEach(function (functionName) {
+                functionOption = document.createElement("OPTION");
+                functionOption.setAttribute("id", functionName.name);
+                functionOption.setAttribute("value", functionName.name);
+                functionOption.setAttribute("class", "functionOptions");
+                functionOption.appendChild(document.createTextNode(functionName.name));
+                selectList.appendChild(functionOption);
+            });
+            var functionButton = document.createElement("Button");
+            var buttonLabel = document.createTextNode("Potvrdiť");
+            var numberInput = document.createElement("input");
+            numberInput.setAttribute("type", "number");
+            numberInput.setAttribute("class", "form-control");
+            numberInput.setAttribute("id", "noiseDb");
+            numberInput.setAttribute("placeholder", "input noise factor in dB");
+            functionButton.setAttribute("id", "functionButton");
+            functionButton.setAttribute("class", "btn btn-dark");
+            functionButton.setAttribute("style", "float: right, position: absolute; bottom: 0; ");
+            functionButton.appendChild(buttonLabel);
+
+            document.getElementById("functionForm").appendChild(numberInput);
+            document.getElementById("functionForm").appendChild(functionButton);
+/* zobrazenie inputu dB */
+            //document.getElementById("noiseDb").style.display = "none";
+            document.getElementById("functionButton").onclick = function () {
+                selectFunction();
+            };
+
+        }
+
+
+/* --------------------------------------SELECT FUNCTION FUNCTION----------------------------------------------------------*/
+
+        function selectFunction() {
+            s = 0;
+            var selectedFunction = document.getElementById("selectFunctions").value;
+            var inputValues = document.getElementsByClassName('functionSelectCheckbox');
+            var inputNoiseDb = document.getElementById("noiseDb").value;
+            var selectedCurveValues = [];
+            var variableNames = [];
+            var checkedCurveValues = null ;
+            var j = 0;
+            var x;
+            var y;
+            var inputValuesArray = []; //hodnoty pre graf
+            var selectedNewCurveValues = []; //hodnoty pre cookies
+            var xm1 = [];
+            var ym1 = [];
+            var xm2 = [];
+            var ym2 = [];
+
+
+            for (var i = 0; inputValues[i]; ++i) {
+                if (inputValues[i].checked) {
+                    checkedCurveValues = inputValues[i].value;
+                    selectedCurveValues[j] = checkedCurveValues;
+                    selectedNewCurveValues[j] = checkedCurveValues;
+                    j++;
+                }
+            }
+
+
+            /* --- pridanie cookies ----*/
+
+
+
+
+
+            /* -- vykreslenie grafu ----*/
+
+            selectedCurveValues.forEach(function (graphName) {
+                var inputRefreshValues = document.getElementsByClassName('functionSelectCheckbox');
+                for (var c = 0; c < inputRefreshValues.length; c++){
+                    inputValuesArray.push(inputRefreshValues[c].value)
+                }
+                if (hodnoty[graphName] === undefined ){
+                    data.forEach(function (dat) {
+                        if (dat.name === graphName) {
+                            x = dat.x;
+                            y = dat.y;
+                        }
+                    })
+                }
+                else {
+                    x = hodnoty[graphName][0].x;
+                    y = hodnoty[graphName][0].y;
+                }
+                console.log(variableNames, graphName, selectedFunction);
+                variableNames.push(graphName + selectedFunction);
+                switch(selectedFunction) {
+                        case "Noise":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yNoise = [];
+                            getNoise(y, yNoise, inputNoiseDb);
+                            setNewGraph(x, yNoise, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Hamming":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yHamm =[];
+                            getHamming(x, y,yHamm);
+                            setNewGraph(x, yHamm, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Rectangle":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yRec = [];
+                            getRectangle(y,yRec);
+                            setNewGraph(x, yRec, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Bartlett":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yBar = [];
+                            getBartlett(y, yBar);
+                            setNewGraph(x, yBar, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Blackman":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yBla = [];
+                            getBlackman(y, yBla);
+                            setNewGraph(x, yBla, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Bartlett-Hann":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yBarHan = [];
+                            getBartlettHann(y, yBarHan);
+                            setNewGraph(x, yBarHan, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Blackman-Nuttall":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yBlackNutt = [];
+                            getBlackmanNuttall(y, yBlackNutt);
+                            setNewGraph(x, yBlackNutt, graphName, selectedFunction, variableNames);
+                                break;
+                        case "Cosinus":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var ycos = [];
+                            getCosinus(y, ycos);
+                            setNewGraph(x, ycos, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Flat-Top":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yFlatTop = [];
+                            getFlatTop(y, yFlatTop);
+                            setNewGraph(x, yFlatTop, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Hann":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yHann = [];
+                            getHann(y, yHann);
+                            setNewGraph(x, yHann, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Lanczos":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yLanczos = [];
+                            getLanczos(y, yLanczos);
+                            setNewGraph(x, yLanczos, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Welch":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yWelch = [];
+                            getWelch(y, yWelch);
+                            setNewGraph(x, yWelch, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Blackman-Harris":
+                            setNewCheckbox(inputValuesArray, graphName, selectedFunction);
+                            var yBlackHarr = [];
+                            getBlackmanHarris(y, yBlackHarr);
+                            setNewGraph(x, yBlackHarr, graphName, selectedFunction, variableNames);
+                            break;
+                        case "Minus":
+                            var yMinus = [];
+                            var selectFirst = document.createElement("SELECT");
+                            var FirstOption = document.createElement("OPTION");
+                            if ($('#selectMinus1').length ) {
+                                $('#selectMinus1').remove();
+                                $('#selectMinus2').remove();
+                                $('#pcko').remove();
+                                $('#MinusButton').remove();
+                            }
+                                selectFirst.setAttribute("id", "selectMinus1");
+                                selectFirst.setAttribute("class", "form-control");
+                                document.getElementById("minus").appendChild(selectFirst);
+                                FirstOption.setAttribute("value", "");
+                                FirstOption.appendChild(document.createTextNode("vyberte prvý"));
+                                inputValuesArray.forEach(function (value) {
+                                    FirstOption = document.createElement("OPTION");
+                                    FirstOption.setAttribute("id", value);
+                                    FirstOption.setAttribute("value", value);
+                                    FirstOption.setAttribute("class", "functionOptions");
+                                    FirstOption.appendChild(document.createTextNode(value));
+                                    selectFirst.appendChild(FirstOption);
+                                });
+                                var p = document.createElement("p");
+                                p.appendChild(document.createTextNode("-"));
+                                p.setAttribute("style", "left: 48%; right: 48%");
+                                p.setAttribute("id", "pcko");
+                                document.getElementById("minus").appendChild(p);
+
+                                var selectSecond = document.createElement("SELECT");
+                                var secondOption = document.createElement("OPTION");
+                                selectSecond.setAttribute("id", "selectMinus2");
+                                selectSecond.setAttribute("class", "form-control");
+                                document.getElementById("minus").appendChild(selectSecond);
+                                secondOption.setAttribute("value", "");
+                                secondOption.appendChild(document.createTextNode("vyberte prvý"));
+                                inputValuesArray.forEach(function (value1) {
+                                    secondOption = document.createElement("OPTION");
+                                    secondOption.setAttribute("id", value1);
+                                    secondOption.setAttribute("value", value1);
+                                    secondOption.setAttribute("class", "functionOptions");
+                                    secondOption.appendChild(document.createTextNode(value1));
+                                    selectSecond.appendChild(secondOption);
+                                });
+                                var MinusButton = document.createElement("Button");
+                                var MinusbuttonLabel = document.createTextNode("Odčítať");
+                                MinusButton.setAttribute("id", "MinusButton");
+                                MinusButton.setAttribute("class", "btn btn-dark");
+                                MinusButton.setAttribute("style", "float: right, position: realtive; bottom: 0; ");
+                                MinusButton.appendChild(MinusbuttonLabel);
+                                document.getElementById("minus").appendChild(MinusButton);
+
+                            document.getElementById("MinusButton").onclick = function () {
+                                var selectedMinus1 = document.getElementById("selectMinus1").value;
+                                var selectedMinus2 = document.getElementById("selectMinus2").value;
+                                var minusName = selectedMinus1 + "-" + selectedMinus2;
+                                var minusNameArray = [];
+                                minusNameArray.push(minusName);
+                                if (hodnoty[selectedMinus1] === undefined ){
+                                    data.forEach(function (dat) {
+                                        if (dat.name === selectedMinus1) {
+                                            xm1 = dat.x;
+                                            ym1 = dat.y;
+                                        }
+                                    })
+                                }
+                                else {
+                                    xm1 = hodnoty[selectedMinus1][0].x;
+                                    ym1 = hodnoty[selectedMinus1][0].y;
+                                }
+                                if (hodnoty[selectedMinus2] === undefined ){
+                                    data.forEach(function (dat) {
+                                        if (dat.name === selectedMinus2) {
+                                            xm2 = dat.x;
+                                            ym2 = dat.y;
+                                        }
+                                    })
+                                }
+                                else {
+                                    xm2 = hodnoty[selectedMinus2][0].x;
+                                    ym2 = hodnoty[selectedMinus2][0].y;
+                                }
+                                getMinus(ym1, ym2, yMinus);
+                                setNewGraph(xm1, yMinus, graphName, selectedFunction, minusNameArray);
+                                setNewCheckbox(graphName, selectedFunction, minusNameArray[0]);
+                                $('#selectMinus1').remove();
+                                $('#selectMinus2').remove();
+                                $('#pcko').remove();
+                                $('#MinusButton').remove();
+                            };
+                            break;
+                        case "Plus":
+                            var yPlus = [];
+                            var selectFirstPlus = document.createElement("SELECT");
+                            var FirstOptionPlus = document.createElement("OPTION");
+                            if ($('#selectPlus1').length ) {
+                                $('#selectPlus1').remove();
+                                $('#selectPlus2').remove();
+                                $('#pcko1').remove();
+                                $('#PlusButton').remove();
+                            }
+                                selectFirstPlus.setAttribute("id", "selectPlus1");
+                                selectFirstPlus.setAttribute("class", "form-control");
+                                document.getElementById("plus").appendChild(selectFirstPlus);
+                                FirstOptionPlus.setAttribute("value", "");
+                                FirstOptionPlus.appendChild(document.createTextNode("vyberte prvý"));
+                                inputValuesArray.forEach(function (value) {
+                                    FirstOptionPlus = document.createElement("OPTION");
+                                    FirstOptionPlus.setAttribute("id", value);
+                                    FirstOptionPlus.setAttribute("value", value);
+                                    FirstOptionPlus.setAttribute("class", "functionOptions");
+                                    FirstOptionPlus.appendChild(document.createTextNode(value));
+                                    selectFirstPlus.appendChild(FirstOptionPlus);
+                                });
+                                var h1 = document.createElement("H2");
+                                h1.appendChild(document.createTextNode("+"));
+                                h1.setAttribute("style", "left: 48%; right: 48%");
+                                h1.setAttribute("id", "pcko1");
+                                document.getElementById("plus").appendChild(h1);
+
+                                var selectSecondPlus = document.createElement("SELECT");
+                                var secondOptionPlus = document.createElement("OPTION");
+                                selectSecondPlus.setAttribute("id", "selectPlus2");
+                                selectSecondPlus.setAttribute("class", "form-control");
+                                document.getElementById("plus").appendChild(selectSecondPlus);
+                                secondOptionPlus.setAttribute("value", "");
+                                secondOptionPlus.appendChild(document.createTextNode("vyberte prvý"));
+                                inputValuesArray.forEach(function (value1) {
+                                    secondOptionPlus = document.createElement("OPTION");
+                                    secondOptionPlus.setAttribute("id", value1);
+                                    secondOptionPlus.setAttribute("value", value1);
+                                    secondOptionPlus.setAttribute("class", "functionOptions");
+                                    secondOptionPlus.appendChild(document.createTextNode(value1));
+                                    selectSecondPlus.appendChild(secondOptionPlus);
+                                });
+                                var PlusButton = document.createElement("Button");
+                                var PlusbuttonLabel = document.createTextNode("Spočítať");
+                                PlusButton.setAttribute("id", "PlusButton");
+                                PlusButton.setAttribute("class", "btn btn-dark");
+                                PlusButton.setAttribute("style", "float: right, position: realtive; bottom: 0; ");
+                                PlusButton.appendChild(PlusbuttonLabel);
+                                document.getElementById("plus").appendChild(PlusButton);
+                                document.getElementById("PlusButton").onclick = function () {
+                                    var selectedPlus1 = document.getElementById("selectPlus1").value;
+                                    var selectedPlus2 = document.getElementById("selectPlus2").value;
+
+                                    var plusName = selectedPlus1 + "+" + selectedPlus2;
+                                    var plusNameArray = [];
+                                    plusNameArray.push(plusName);
+                                    if (hodnoty[selectedPlus1] === undefined ){
+                                        data.forEach(function (dat) {
+                                            if (dat.name === selectedPlus1) {
+                                                xm1 = dat.x;
+                                                ym1 = dat.y;
+                                            }
+                                        })
+                                    }
+                                    else {
+                                        xm1 = hodnoty[selectedPlus1][0].x;
+                                        ym1 = hodnoty[selectedPlus1][0].y;
+                                    }
+                                    if (hodnoty[selectedPlus2] === undefined ){
+                                        data.forEach(function (dat) {
+                                            if (dat.name === selectedPlus2) {
+                                                xm2 = dat.x;
+                                                ym2 = dat.y;
+                                            }
+                                        })
+                                    }
+                                    else {
+                                        xm2 = hodnoty[selectedPlus2][0].x;
+                                        ym2 = hodnoty[selectedPlus2][0].y;
+                                    }
+                                    getPlus(ym1, ym2, yPlus);
+                                    setNewGraph(xm1, yPlus, graphName, selectedFunction, plusNameArray);
+                                    setNewCheckbox(graphName, selectedFunction, plusNameArray[0]);
+                                    $('#selectPlus1').remove();
+                                    $('#selectPlus2').remove();
+                                    $('#pcko1').remove();
+                                    $('#PlusButton').remove();
+
+                                };
+                                break;
+                            case "Moving Average":
+                                break;
+                        default:
+                    }
+            });
+            console.log(data[0].toString(), data[0], "x: " + data[0].x.toString(), "y: " + data[0].y.toString(), data[0].text, data[0].mode, data[0].name );
+            var xToString = "x: " + data[0].x.toString();
+            var yToString = ", y: " + data[0].y.toString();
+            var text = ", text: " + data[0].text;
+            var nameC = ",name: " + data[0].name;
+            var help = [xToString, yToString, text, nameC];
+            var helptostrng = help.toString();
+
+        }
+/* --------------------------------------checkbox pre nove grafy FUNCTION----------------------------------------------------------*/
+
+        function setNewCheckbox(inputValuesArray, graphName, selectedFunction) {
+            if (!inputValuesArray.includes(graphName + selectedFunction)){
+                if (graphName !== "Minus" && graphName !== "Plus") {
+                    var p = document.createElement("p");
+                    var graphRefreshName = document.createElement("INPUT");
+                    var label = document.createElement("LABEL");
+                    graphRefreshName.setAttribute("type", "checkbox");
+                    graphRefreshName.setAttribute("name", graphName + selectedFunction);
+                    graphRefreshName.setAttribute("id", graphName + selectedFunction);
+                    graphRefreshName.setAttribute("value", graphName + selectedFunction);
+                    graphRefreshName.setAttribute("class", "functionSelectCheckbox");
+                    graphRefreshName.setAttribute("style", "float: left;  margin:0; vertical-align: bottom; position: relative;");
+                    label.setAttribute("for", graphName + selectedFunction);
+                    label.appendChild(document.createTextNode(graphName + selectedFunction));
+                    label.setAttribute("style", "display: block; width: 235px; vertical-align: text-top");
+                    document.getElementById("functionForm").appendChild(p);
+                    document.getElementById("functionForm").appendChild(graphRefreshName);
+                    document.getElementById("functionForm").appendChild(label);
+                }
+                else {
+                    var p2 = document.createElement("p");
+                    var graphRefreshName2 = document.createElement("INPUT");
+                    var label2 = document.createElement("LABEL");
+                    graphRefreshName2.setAttribute("type", "checkbox");
+                    graphRefreshName2.setAttribute("name", graphName + selectedFunction);
+                    graphRefreshName2.setAttribute("id", graphName + selectedFunction);
+                    graphRefreshName2.setAttribute("value", selectedFunction);
+                    graphRefreshName2.setAttribute("class", "functionSelectCheckbox");
+                    graphRefreshName2.setAttribute("style", "float: left;  margin:0; vertical-align: bottom; position: relative;");
+                    label2.setAttribute("for", graphName + selectedFunction);
+                    label2.appendChild(document.createTextNode(graphName + selectedFunction));
+                    label2.setAttribute("style", "display: block; width: 235px; vertical-align: text-top");
+                    document.getElementById("functionForm").appendChild(p2);
+                    document.getElementById("functionForm").appendChild(graphRefreshName2);
+                    document.getElementById("functionForm").appendChild(label2);
+                }
+            }
+        }
+
+/* --------------------------------------Noise FUNCTION----------------------------------------------------------*/
+
+        function getPlus(y0, y1, y2) {
+            for (var n = 0; n < y0.length; n++){
+                var y3 = y0[n] + y1[n];
+                y2.push(y3);
+            }
+        }
+
+/* --------------------------------------Noise FUNCTION----------------------------------------------------------*/
+
+        function getMinus(y0, y1, y2) {
+            for (var n = 0; n < y0.length; n++){
+               var y3 = y0[n] - y1[n];
+                y2.push(y3);
+            }
+        }
+
+/* --------------------------------------Noise FUNCTION----------------------------------------------------------*/
+
+        function getNoise(y, y4, inputNoise) {
+            var max = Math.max.apply(null, y);
+            var noiseDb = max /  Math.pow(10, (inputNoise / 10));
+            y.forEach(function (y2) {
+                var y3 = y2 + Math.floor(Math.random() * (noiseDb - -noiseDb)) + -noiseDb;
+               y4.push(y3);
+            });
+        }
+/* --------------------------------------BlackmanHarris FUNCTION----------------------------------------------------------*/
+
+        function getBlackmanNuttall(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = 0.3635819 - 0.4891775 * Math.cos((2 * Math.PI * y2)/(length - 1)) + 0.1365995 * Math.cos((4 * Math.PI * y2)/(length - 1)) - 0.0106411 * Math.cos((6 * Math.PI * y2)/(length - 1));
+                var times = y2 * y3;
+                y4.push(times);
+            })
+        }
+
+/* --------------------------------------BlackmanHarris FUNCTION----------------------------------------------------------*/
+
+        function getCosinus(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = Math.cos(((Math.PI * y2)/(length - 1)) - (Math.PI / 2) );
+                var times = y2 * y3;
+                y4.push(times);
+            })
+        }
+
+/* --------------------------------------FlatTop FUNCTION----------------------------------------------------------*/
+
+        function getFlatTop(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = 0.209671 - 0.407331 * Math.cos((2 * Math.PI * y2)/(length - 1)) + 0.281225 * Math.cos((4 * Math.PI * y2)/(length - 1)) - 0.092669 * Math.cos((6 * Math.PI * y2)/(length - 1)) + 0.009104 * Math.cos((8 * Math.PI * y2)/(length - 1));
+                var times = y2 * y3;
+                y4.push(times);
+            })
+        }
+
+/* --------------------------------------Hann FUNCTION----------------------------------------------------------*/
+
+        function getHann(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = 0.5 * (1 - Math.cos((2 * y2 * Math.PI)/(length -1)));
+                var times = y2 * y3;
+                y4.push(times);
+            })
+        }
+
+/* --------------------------------------Lanczos FUNCTION----------------------------------------------------------*/
+
+        function sinc (x) {
+            return x === 0 ? 1 : 0.3183098861837907 * Math.sin(Math.PI*x) / x
+        }
+
+        function getLanczos(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = sinc(((2*y2)/(length - 1)) - 1);
+                var times = y2 * y3;
+                y4.push(times);
+            })
+        }
+/* --------------------------------------Welch FUNCTION----------------------------------------------------------*/
+
+        function getWelch(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = 1 - Math.pow((y2 - ((length - 1)/ 2))/((length -1)/ 2), 2);
+                var times = y2 * y3;
+                y4.push(times);
+            })
+        }
+/* --------------------------------------BlackmanHarris FUNCTION----------------------------------------------------------*/
+
+        function getBlackmanHarris(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = 0.35875 - 0.48829 * Math.cos((2 * Math.PI * y2)/(length - 1)) + 0.14128 * Math.cos((4 * Math.PI * y2)/(length - 1)) - 0.01168 * Math.cos((6 * Math.PI * y2)/(length - 1));
+                var times = y2 * y3;
+                y4.push(times);
+            })
+        }
+/* --------------------------------------BartlettHann FUNCTION----------------------------------------------------------*/
+
+        function getBartlettHann(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = 0.62 -0.48 * Math.abs((y2/(length - 1)) - 1/2) - 0.38* Math.cos((2 * Math.PI * y2)/(length - 1));
+                var times = y2 * y3;
+                y4.push(times);
+            })
+
+        }
+/* --------------------------------------HAMMING FUNCTION----------------------------------------------------------*/
+        function getHamming(x, y, y4) {
+            var length = y.length;
+
+            for (var i = 0; i < x.length; i++){
+                var y3 = 0.54 - 0.46 * Math.cos((2 * Math.PI * (i + 1)/length));
+                var times = y[i] * y3;
+                y4.push(times);
+            }
+
+          /*  y.forEach(function (y2) {
+                var y3 = 0.54 -0.46 * Math.cos((2 * Math.PI * y2)/length);
+                var times = y2 * y3;
+                y4.push(times);
+            })*/
+        }
+
+/* --------------------------------------Rectangle FUNCTION----------------------------------------------------------*/
+        function getRectangle(y, y4) {
+            var length = y.length;
+            var oneMinus = (-length - 1)/2;
+            var onePlus  = (length - 1)/2;
+            y.forEach(function (y2) {
+                if (oneMinus <= y2 && y2 <= onePlus){
+                    var y3 =1;
+                    var times = y2 * y3;
+                    y4.push(times);
+                }
+                else {
+                    var y30 = 0;
+                    var times0 = y2 * y30;
+                    y4.push(times0);
+                }
+            })
+        }
+/* --------------------------------------Bartlett FUNCTION----------------------------------------------------------*/
+
+        function getBartlett(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+                var y3 = y2*(1 - ((Math.abs(y2))/((length-1)/2)));
+                var times = y2 * y3;
+                y4.push(y3);
+            })
+        }
+/* --------------------------------------Blackman FUNCTION----------------------------------------------------------*/
+
+        function getBlackman(y, y4) {
+            var length = y.length;
+            y.forEach(function (y2) {
+               var y3 = 0.42 - 0.50 * Math.cos((2*Math.PI*y2)/(length - 1)) + 0.8 * Math.cos((4*Math.PI*y2)/(length - 1));
+               var times = y2 * y3;
+               y4.push(times);
+            })
+        }
+
+/* --------------------------------------new graph FUNCTION----------------------------------------------------------*/
+
+
+        function setNewGraph(x,y, graphName, selectedFunction, variableNames) {
+            if (data.length < 1) {
+                graphName = {
+                    x: x,
+                    y: y,
+                    text: graphName,
+                    'hoverinfo': "xaxis + text",
+                    mode: 'lines',
+                    line: {
+                        color: getColor(),
+                        width: 2
+                    },
+                    name: variableNames[s]
+                };
+                data.push(graphName);
+                setSession(graphName);
+                console.log(data)
+            }
+            else {
+                var obsah = [];
+                for (var t = 0; t < data.length; t++) {
+                    obsah.push(data[t].name);
+                }
+                if (!obsah.includes((graphName + selectedFunction))) {
+                    if (variableNames.length < 2) {
+                        graphName = {
+                            x: x,
+                            y: y,
+                            text: graphName,
+                            'hoverinfo': "xaxis + text",
+                            mode: 'lines',
+                            line: {
+                                color: getColor(),
+                                width: 2
+                            },
+                            name: variableNames[s]
+                        };
+
+                        data.push(graphName);
+                        setSession(graphName);
+                        }
+                    else {
+                        s++;
+                        graphName = {
+                            x: x,
+                            y: y,
+                            text: graphName,
+                            'hoverinfo': "xaxis + text",
+                            mode: 'lines',
+                            line: {
+                                color: getColor(),
+                                width: 2
+                            },
+                            name: variableNames[s]
+                        };
+                        data.push(graphName);
+                        setSession(graphName);
+                    }
+                }
+            }
+        }
+/* --------------------------------------COOKIES FUNCTION----------------------------------------------------------*/
+
+    function getCookies() {
+        var selectedValues = [];
+        var ca = document.cookie.split(";");
+        var caLength = ca.length;
+        var cookie = Cookies.get();
+        var isEmpty = jQuery.isEmptyObject(cookie);
+        var inputElementsGraph = document.getElementsByClassName('graphSelectCheckbox');
+        if (isEmpty === false){
+            for (var n = 0; n < inputElementsGraph.length; n++){
+               if (caLength === inputElementsGraph.length){
+                   selectedValues.push(Cookies.get('checkedgraph' + n))
+               }
+               if (caLength < inputElementsGraph.length){
+                        if (n <= caLength ){
+                            selectedValues.push(Cookies.get('checkedgraph' + n))
+                        }
+               }
+            }
+            selectedValues.forEach(function (graphName) {
+                if (graphName !== undefined){
+                    graphName = {
+                        x: hodnoty[graphName][0].x,
+                        y: hodnoty[graphName][0].y,
+                        text: graphName,
+                        'hoverinfo': "xaxis + text",
+                        mode: 'lines',
+                        line: {
+                            color: getColor(),
+                            width: 2
+                        },
+                        name: graphName
+                    };
+                    data.push(graphName);
+                }
+                else {
+                    selectedValues = selectedValues.filter(function(values) { return values !== graphName });
+                }
+            });
+        }
+    }
+
+/*----------------------------------------------Storage----------------------------------------------------*/
+
+    function setSession(object) {
+        var oldSession = JSON.parse(sessionStorage.getItem('Grafy')) || [];
+        oldSession.push(object);
+        sessionStorage.setItem('Grafy', JSON.stringify(oldSession));
+        }
+
+    function getSession() {
+        var oldSession = JSON.parse(sessionStorage.getItem('Grafy')) || [];
+           oldSession.forEach(function (graf) {
+               data.push(graf);
+           })
+    }
+
+/*----------------------------------------------Reset graf----------------------------------------------------*/
+    function resetGraph() {
+        var inputElements = document.getElementsByClassName('graphSelectCheckbox');
+        var inputElementsFunctions = document.getElementsByClassName('functionSelectCheckbox');
+        console.log(inputElementsFunctions, inputElements, inputElementsFunctions[0].id);
+        var length = inputElementsFunctions.length + inputElements.length;
+        for (var i = 0; i < length; i++){
+            if (inputElementsFunctions[0].type === "checkbox") {
+                $('label[for=' + inputElementsFunctions[0].value + ']').remove();
+                $('#' + inputElementsFunctions[0].id).remove();
+
+            }
+            else {
+                $('#' + inputElementsFunctions[0].id).remove();
+            }
+        }
+        $('#noiseDb').remove();
+        $('#functionButton').remove();
+        $('#selectFunctions').remove();
+        $('#h5').remove();
+        $('#h5f').remove();
+        $('#selectGraphsButton').remove();
+        graphFormFunction();
+        functionChoiseForm();
+        data = [];
+        showGraph();
+        console.log()
+    }
+
+  /*----------------------------------------------Server graf----------------------------------------------------*/
+
+        document.getElementById('showGraph').onclick = function () {
+         myFunction()
+        };
+
+        function myFunction() {
+            var sin ={ {{ firstPlot.getSinusData(Item) }}
+                text: "sinus",
+                'hoverinfo' : "xaxis + text",
+                mode: 'lines',
+                line: {
+                    color: '#075EFE',
+                    width: 2
+                },
+                name: 'sinus'
+            };
+            var tria ={ {{ firstPlot.getTriangleData(Item) }}
+                text: "triangle",
+                'hoverinfo' : "xaxis + text",
+                mode: 'lines',
+                line: {
+                    color: '#fe142a',
+                    width: 2
+                },
+                name: 'triangle'
+            };
+            var data = [sin, tria];
+            CHARTMAIN = document.getElementById('chartMain');
+            Plotly.newPlot( 'chartMain', data, {
+                modeBarButtonsToRemove: ['toImage', 'sendDataToCloud'],
+                modeBarButtonsToAdd: [{
+                    name: 'PNG_1000x500',
+                    icon: Plotly.Icons.camera,
+                    click: function(gd) {
+                        Plotly.downloadImage(gd, {format: 'png', width: 1000, height: 500, filename: 'analysis'});
+                    }
+                }]
+            });
+        }
+    </script>
+
+
+</body>
+</html>

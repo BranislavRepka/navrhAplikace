@@ -1,0 +1,11 @@
+app:
+    resource: '@AppBundle/Controller/'
+    type: annotation
+
+plot:
+    resource: "@AppPlotBundle/Controller/"
+    type:     annotation
+
+api:
+    resource: "@AppApiBundle/Controller/"
+    type:     annotation

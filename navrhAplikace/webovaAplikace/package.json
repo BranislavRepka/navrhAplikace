@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@symfony/webpack-encore": "^0.20.1",
+    "webpack-notifier": "^1.6.0"
+  },
+  "dependencies": {
+    "js-cookie": "^2.2.0"
+  }
+}
